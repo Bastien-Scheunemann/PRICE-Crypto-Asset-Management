@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-""" Import des différents modules """
+""" Import """
 # !pip install ta
 import numpy as np
 import yfinance as yf
@@ -11,18 +11,15 @@ from scipy.stats import linregress
 from sklearn.cluster import KMeans
 import ta
 
-
-""" Création de la liste des cryptos à trader """
+""" Crypto liste to trade with """
 
 crypto_liste = [['Bitcoin', 'BTC-USD'], ['Etherium', 'ETH-USD'], ['Chia', 'XCH-USD'],
-                ['Cordano', 'ADA-USD'],['Binance', 'BNB-USD'], ['Avalanche', 'AVAX-USD']]
+                ['Cordano', 'ADA-USD'], ['Binance', 'BNB-USD'], ['Avalanche', 'AVAX-USD']]
 
 end_date = datetime.today().strftime('%Y-%m-%d')
-start_date = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d') # on commence 60 jours avant aujourd'hui
-
+start_date = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')  # Start 60 days before today
 
 for crypto in crypto_liste:
-
     data = yf.download(crypto[1], start=start_date, end=end_date, interval="1h")
     data = data.reset_index()
     crypto.append(data)
@@ -30,26 +27,25 @@ for crypto in crypto_liste:
 data = crypto_liste[0][2]
 data = data['Close']
 
-bitcoin_prices = [] # on récupère le prix de bitcoin, utilisé pour l'affichage final
+bitcoin_prices = []  # Get BTC price for the plot
 index_liste = []
-for index, row in crypto_liste[0][2].tail(720).iterrows():
 
+# Loop through the crypto list data to get the index for the plot
+for index, row in crypto_liste[0][2].tail(720).iterrows():
     index_liste.append(index)
     bitcoin_prices.append(row['Close'])
 
+"""Definition of the Asset CLass and the associated funtion"""
 
-
-"""Définition de la classe Asset et des fonctions associées"""
 
 class Asset:
     """
-    Definition de la classe Asset qui a pour but de modelliser les actifs du
-    portefeuille ainsi que les fonctions associées
+    The Asset Class aims to define the crypto currency that the bot will trade and the associated functions
     """
 
     def __init__(self, name, symbol, quantity, price, datetime, index):
         """
-        Fonction d'initialisation de la classe Asset
+        Initialization of the asset
         """
         self.name = name
         self.symbol = symbol
@@ -60,35 +56,32 @@ class Asset:
 
     def set_quantity(self, quantity):
         """
-        Fonction qui permet de mettre à jour la quantité d'un actif du portefeuille
-        Utilisé dans la fonction add_asset pour ajouter des actifs au portefeuille
+        Set the quantity of an asset and aslo helpful to modify it
         """
         self.quantity = quantity
 
     def volatility(self):
         """
-        La volatilité est définis comme étant la variance de la dernière heure du prix de l'asset
+        Return the volatility of the asset as the variance of the last hour asset prices
         """
-        # Récupération des données
+        # Load data
         data = yf.download(self.symbol, interval="5m", period="1d")
         last_hour_data = data.tail(12)
         last_hour_returns = data['Close'].pct_change()
 
-        # Calcul de la volatilité
+        # Volatility calculation
         volatility = last_hour_returns.std()
         return volatility
 
-
     def support_resistance(self, period, K=10):
         """
-        La fonction support_resistance effectue une analyse des niveaux de support et de résistance pour un symbole
-        donné sur une période spécifiée.
+        Return the support and resistance levels for the traded asset
         """
 
-        # K est le nombre de cluster
+        # K is the number of cluster
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
-                data = crypto[2][self.index - period*24: self.index]
+                data = crypto[2][self.index - period * 24: self.index]
 
         prices = np.array(data["Close"])
         kmeans = KMeans(n_clusters=K).fit(prices.reshape(-1, 1))
@@ -118,11 +111,9 @@ class Asset:
                 output.append(sum([_max, s[i + 1][0]]) / 2)
         return output
 
-
     def PP_sup_res(self, period, K):
         """
-        Fonction qui retourne les plus proches support et résistance de l'asset
-        Cette fonction permet de définir le TP et le SL de nos stratégies de trading
+        Return closest support and resistance of the last closed price, useful for the TP and Sl of the trading strategies
         """
         list_sup_res = self.support_resistance(period, K)
         price = self.price
@@ -140,12 +131,11 @@ class Asset:
         # Return the bounding numbers as a tuple
         return lower_bound, upper_bound
 
-
     def tendance_haussiere(self, period):  # period est un nombre de jours
 
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
-                data = crypto[2][self.index - period*24: self.index]
+                data = crypto[2][self.index - period * 24: self.index]
         dt = data['Close']
         t = [i for i in range(len(dt))]
         slope, intercept, r_value, p_value, std_err = linregress(t, dt)
@@ -155,12 +145,11 @@ class Asset:
         else:
             return 0
 
-
     def tendance_baissiere(self, period):  # period est un nombre de jours
 
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
-                data = crypto[2][self.index - period*24: self.index]
+                data = crypto[2][self.index - period * 24: self.index]
 
         dt = data['Close']
         t = [i for i in range(len(dt))]
@@ -170,7 +159,6 @@ class Asset:
             return 1
         else:
             return 0
-
 
     def check_ma_50_under_200(self):
 
@@ -191,7 +179,6 @@ class Asset:
         else:
             return 0
 
-
     def check_ma_50_above_200(self):
 
         for crypto in crypto_liste:
@@ -210,7 +197,6 @@ class Asset:
             return 1
         else:
             return 0
-
 
     def check_ma_15_under_25(self):  # cet indicateur permet de déterminer une zone d'achat
 
@@ -231,7 +217,6 @@ class Asset:
         else:
             return 0
 
-
     def check_ma_15_above_25(self):  # cet indicateur permet de déterminer une zone d'achat
 
         for crypto in crypto_liste:
@@ -251,14 +236,12 @@ class Asset:
         else:
             return 0
 
-
     def check_stoch_indicator(self):  # cet indicateur permet de déterminer une zone d'achat
 
         # chargement des données
         for crypto in crypto_liste:
 
             if crypto[1] == self.symbol:
-
                 data = crypto[2][self.index - 168: self.index]
 
         # construction de l'indicateur
@@ -274,22 +257,20 @@ class Asset:
         else:
             return 0
 
-
     # Define the RSI trading strategy function
     def rsi_strategy(self, rsi_oversold=30, rsi_overbought=70):
 
         for crypto in crypto_liste:
 
             if crypto[1] == self.symbol:
-
                 stock_data = crypto[2][self.index - 30: self.index]
 
         # Calculate the RSI indicator using TA-Lib
         rsi_indicator = ta.momentum.RSIIndicator(stock_data['Close'], window=20)
-        stock_data.loc[:,'RSI'] = rsi_indicator.rsi()
+        stock_data.loc[:, 'RSI'] = rsi_indicator.rsi()
 
         # Create a signal when the RSI crosses the oversold or overbought levels
-        stock_data.loc[:,'Signal'] = 0
+        stock_data.loc[:, 'Signal'] = 0
         stock_data.loc[stock_data['RSI'] < rsi_oversold, 'Signal'] = 1
         stock_data.loc[stock_data['RSI'] > rsi_overbought, 'Signal'] = 0
 
@@ -299,7 +280,6 @@ class Asset:
             return 1
         else:
             return 0
-
 
 
 """Définition de la class Portfolio et des fonctions associées"""
@@ -325,7 +305,6 @@ class Portfolio:
         #            }
         # permet de concerver le prix d'achat
         # util pour avoir des rapports de performance
-
 
     def add_asset(self, asset, order_time):  # cette fonction ajoute une crypto au portefeuille
 
@@ -364,7 +343,6 @@ class Portfolio:
             else:
                 self.asset_price_init[asset.symbol] = {'name': asset.name, 'price': asset.price}
 
-
     def remove_asset(self, asset, order_time):
         # fonction qui retire un actif du portefeuille et met à jour l'historique des transactions
         gain = asset.quantity * asset.price
@@ -374,10 +352,8 @@ class Portfolio:
         self.history.append(['vente', asset, order_time])
         del self.asset_price_init[asset.symbol]
 
-
     def total_value(self):
         return sum(asset.quantity * asset.price for asset in self.assets) + self.cash.quantity * self.cash.price
-
 
     def tp_sl(self, asset, order_time):  # Fonction take profit et stop loss
         ##Take profit sans conditions de support/résistance pour l'instant (version naif)
@@ -385,28 +361,27 @@ class Portfolio:
         price_init = self.asset_price_init[asset.symbol]['price']
 
         # implémentation de la stratégie de TP et SL, arbitraire ici
-        #if current_price > 1.15 * price_init:
-            #self.remove_asset(asset, order_time)
+        # if current_price > 1.15 * price_init:
+        # self.remove_asset(asset, order_time)
         CI = (asset.check_ma_50_above_200() + asset.tendance_baissiere(20) + asset.check_ma_15_above_25()) / 3
 
         if current_price > 1.04 * price_init:
-          #  asset1 = Asset(asset.name, asset.symbol, asset.quantity / 2, asset.price,
-           #                asset.datetime, self.index)  # On divie la quantité par deux
+            #  asset1 = Asset(asset.name, asset.symbol, asset.quantity / 2, asset.price,
+            #                asset.datetime, self.index)  # On divie la quantité par deux
             self.remove_asset(asset, order_time)
-           # self.add_asset(asset1, order_time)
+        # self.add_asset(asset1, order_time)
 
         ##Stop loss
         elif current_price < 0.98 * price_init:
-           # asset1 = Asset(asset.name, asset.symbol, asset.quantity / 2, asset.price, asset.datetime, self.index)
+            # asset1 = Asset(asset.name, asset.symbol, asset.quantity / 2, asset.price, asset.datetime, self.index)
             self.remove_asset(asset, order_time)
-           # self.add_asset(asset1, order_time)
+        # self.add_asset(asset1, order_time)
 
-        #elif CI >= 0.5:
-            #self.remove_asset(asset, order_time)
+        # elif CI >= 0.5:
+        # self.remove_asset(asset, order_time)
 
     # elif current_price < 0.90 * price_init:
-        #    self.remove_asset(asset, order_time)
-
+    #    self.remove_asset(asset, order_time)
 
     def update(self):
 
@@ -419,7 +394,6 @@ class Portfolio:
                 for crypto in crypto_liste:
 
                     if crypto[1] == ticker:
-
                         data = crypto[2]
 
                 # Extraction du dernier prix de cloture en hourly
@@ -427,7 +401,6 @@ class Portfolio:
 
                 # Mise à jour du prix de l'actif
                 asset.price = last_closed_price
-
 
     def risk(self, n):
         # Première étape : récupérer les données des actifs du portefeuille
@@ -442,9 +415,8 @@ class Portfolio:
             for crypto in crypto_liste:
 
                 if crypto[1] == asset.symbol:
-
                     data = crypto[2]
-                    data = data['Close'][self.index-n:self.index]
+                    data = data['Close'][self.index - n:self.index]
                     prices.append(data.tolist())
 
         S = np.array(prices)
@@ -455,7 +427,7 @@ class Portfolio:
         S_demeaned = S - M[:, np.newaxis]
 
         # Quatrième étape on calcul la covariance
-        #A_pinv = np.linalg.pinv(S_demeaned)
+        # A_pinv = np.linalg.pinv(S_demeaned)
         C = np.cov(S_demeaned)
 
         # Cinquième étape récupérer les pondérations des actifs dans le portefeuille
@@ -477,7 +449,6 @@ class Portfolio:
 
         return portfolio_risk
 
-
     def print_performance_1(self, time):
 
         print(f"Portfolio at time {time}:")
@@ -494,7 +465,6 @@ class Portfolio:
         print(f"Total value: {self.total_value()}\n")
         print(f"Risk value: {self.risk(10)}\n")
 
-
     def performance(self):
 
         headers = ["Name", "Symbol", "Volatility", "Quantity", "Price", "% of Pf"]
@@ -504,10 +474,9 @@ class Portfolio:
                          asset.quantity * asset.price / self.total_value() * 100])
         data.append([self.cash.name, self.cash.symbol, 'None', self.cash.quantity, self.cash.price,
                      self.cash.quantity / self.total_value() * 100])
-        value_and_risk = [self.total_value(),self.risk(10)]
+        value_and_risk = [self.total_value(), self.risk(10)]
 
         return data, value_and_risk
-
 
     def performance2(self):
         data = {}
@@ -518,20 +487,20 @@ class Portfolio:
             for a in name_asset_list:
 
                 if a[1] == asset.symbol:
-
                     data[asset.symbol] = {"Name": asset.name, "Symbol": asset.symbol, "Volatility": asset.volatility(),
-                                  "Quantity": asset.quantity, "Price": asset.price, "pPf": asset.quantity * asset.price / self.total_value() * 100}
+                                          "Quantity": asset.quantity, "Price": asset.price,
+                                          "pPf": asset.quantity * asset.price / self.total_value() * 100}
 
                     name_asset_list.remove(a)
 
-        for a in name_asset_list :
+        for a in name_asset_list:
             data[a[1]] = {"Name": a[0], "Symbol": a[1], "Volatility": 0,
                           "Quantity": 0, "Price": 0,
                           "pPf": 0}
 
         data['cash'] = {"Name": self.cash.name, "Symbol": self.cash.symbol, "Volatility": 'None',
-         "Quantity": self.cash.quantity, "Price": self.cash.price,
-         "pPf": self.cash.quantity / self.total_value() * 100}
+                        "Quantity": self.cash.quantity, "Price": self.cash.price,
+                        "pPf": self.cash.quantity / self.total_value() * 100}
 
         return data
 
@@ -597,24 +566,25 @@ def app(Pf):
             qty_asset = taille_position(new_asset.price, sup, res, risk_value, Pf.total_value())
 
             qty_max = min(asset_size_max * Pf.total_value() / new_asset.price, qty_asset)
-            #if a[1] == 'BTC-USD' or a[1] == 'ETH-USD' :
+            # if a[1] == 'BTC-USD' or a[1] == 'ETH-USD' :
 
-             #   qty_max = 0.4 * Pf.total_value() / new_asset.price
+            #   qty_max = 0.4 * Pf.total_value() / new_asset.price
             # qty = min(qty_asset, qty_max)
 
             new_asset.set_quantity(qty_max)  # 20% du portefeuille
 
             CI_achat = (new_asset.check_ma_50_under_200() + new_asset.check_stoch_indicator() + \
-                        new_asset.tendance_haussiere(20) + new_asset.rsi_strategy() + new_asset.check_ma_15_under_25()) / 5
+                        new_asset.tendance_haussiere(
+                            20) + new_asset.rsi_strategy() + new_asset.check_ma_15_under_25()) / 5
 
             # CI_achat peut être interprété comme la probabilité que le stock monte et atteigne la première résistance
             expected_return = CI_achat * RR_ratio
 
-            #print("je fais l'asset :" + new_asset.name)
-            #print(expected_return, RR_ratio, CI_achat)
+            # print("je fais l'asset :" + new_asset.name)
+            # print(expected_return, RR_ratio, CI_achat)
 
             # condition de rentabilité et de probabilité d'occurence suffisante
-            if 2.2>=RR_ratio >= RR_ratio_best and CI_achat >= 0.4:
+            if 2.2 >= RR_ratio >= RR_ratio_best and CI_achat >= 0.4:
                 liste_indicateur_achat.append([expected_return, new_asset])
 
     # on tri de manière décroissante pour optimizer la performance
@@ -672,9 +642,9 @@ line4, = ax2.plot([], [], label='Chia Shares')
 line5, = ax2.plot([], [], label='Cordano Shares')
 line6, = ax2.plot([], [], label='Binance Shares')
 line7, = ax2.plot([], [], label='Avalanche Shares')
-line8, = ax1.plot([], [], label = 'Bitcoin prices Evolution (%)')
+line8, = ax1.plot([], [], label='Bitcoin prices Evolution (%)')
 line9, = ax4.plot([], [], label='Risk')
-line10, = ax5.plot([],[], label='Prix du Pf en dollar')
+line10, = ax5.plot([], [], label='Prix du Pf en dollar')
 
 ax1.set_xlabel('Index')
 ax1.set_ylabel('Portfolio Value')
@@ -686,10 +656,10 @@ ax2.set_ylabel('Shares')
 ax2.set_title('% Shares in the Pf Over Time')
 ax2.legend()
 
-#ax3.set_xlabel('Index')
-#ax3.set_ylabel('Bitcoin price')
-#ax3.set_title('Evolution of the Bitcoin')
-#ax3.legend()
+# ax3.set_xlabel('Index')
+# ax3.set_ylabel('Bitcoin price')
+# ax3.set_title('Evolution of the Bitcoin')
+# ax3.legend()
 
 ax4.set_xlabel('Index')
 ax4.set_ylabel('risk')
@@ -701,9 +671,9 @@ ax5.set_ylabel('Pf $')
 ax5.set_title('Evolution in $')
 ax5.legend()
 
-def animate(i):
 
-    if i == 0 :
+def animate(i):
+    if i == 0:
 
         portfolio_value.append(0)
         bitcoin_prices2.append(0)
@@ -724,7 +694,7 @@ def animate(i):
 
         index_values.append(index)
 
-    else :
+    else:
 
         index = index_liste[i]
         bitcoin_p = bitcoin_prices[i]
@@ -732,7 +702,7 @@ def animate(i):
         Pf.update()
         app(Pf)
         perf = Pf.performance2()
-        portfolio_value.append((Pf.total_value()-portfolio_value_dollar[i-1])/portfolio_value_dollar[i-1])
+        portfolio_value.append((Pf.total_value() - portfolio_value_dollar[i - 1]) / portfolio_value_dollar[i - 1])
         risk_values.append(Pf.risk(10))
         bitcoin_shares.append(perf['BTC-USD']['pPf'])
         etherium_shares.append(perf['ETH-USD']['pPf'])
@@ -740,13 +710,13 @@ def animate(i):
         cordano_shares.append(perf['ADA-USD']['pPf'])
         binance_shares.append(perf['BNB-USD']['pPf'])
         avalanche_shares.append(perf['AVAX-USD']['pPf'])
-        bitcoin_prices2.append((bitcoin_p - bitcoin_prices[i-1])/bitcoin_prices[i-1])
-        portfolio_value_dollar.append(Pf.total_value() )
+        bitcoin_prices2.append((bitcoin_p - bitcoin_prices[i - 1]) / bitcoin_prices[i - 1])
+        portfolio_value_dollar.append(Pf.total_value())
 
         index_values.append(index)
 
     line1.set_data(index_values, portfolio_value)
-    #ax1.set_ylim(980000, 1010000)
+    # ax1.set_ylim(980000, 1010000)
     ax1.relim()
     ax1.autoscale_view()
 
@@ -763,8 +733,8 @@ def animate(i):
     ax2.relim()
     ax2.autoscale_view()
 
-   # ax3.relim()
-    #ax3.autoscale_view()
+    # ax3.relim()
+    # ax3.autoscale_view()
 
     ax4.relim()
     ax4.autoscale_view()
@@ -774,9 +744,9 @@ def animate(i):
 
     return line1, line2, line3, line4, line5, line6, line7, line8, line9, line10
 
+
 ani = animation.FuncAnimation(fig, animate, frames=len(index_liste), interval=10)
 plt.show()
-
 
 # """# Exemple d'usage pour print_performance_1
 """Pf = Portfolio("My Portfolio", 10000)
@@ -814,5 +784,3 @@ Pf.print_performance_1(1)
 print("Pf total cash", Pf.cash.quantity)
 print(Pf.risk(10))
 """
-
-
