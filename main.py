@@ -132,7 +132,10 @@ class Asset:
         return lower_bound, upper_bound
 
     def tendance_haussiere(self, period):  # period est un nombre de jours
-
+        """
+        :param period: number of day
+        :return: 1 the price are increasing 0 the price are not increasing
+        """
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
                 data = crypto[2][self.index - period * 24: self.index]
