@@ -167,7 +167,9 @@ class Asset:
             return 0
 
     def check_ma_50_under_200(self):
-
+        """
+        Check if the ma50 is below the ma200 by returning 1 if it's true 0 otherwise
+        """
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
                 data = crypto[2][self.index - 40: self.index]
