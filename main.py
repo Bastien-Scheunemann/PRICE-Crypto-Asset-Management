@@ -149,7 +149,10 @@ class Asset:
             return 0
 
     def tendance_baissiere(self, period):  # period est un nombre de jours
-
+        """
+        :param period: number of day
+        :return: 1 the price are decreasing 0 the price are not decreasing
+        """
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
                 data = crypto[2][self.index - period * 24: self.index]
