@@ -244,7 +244,7 @@ class Asset:
         else:
             return 0
 
-    def check_stoch_indicator(self):  # cet indicateur permet de déterminer une zone d'achat
+    def check_stoch_indicator(self):  # indicator to get a buy signal
 
         # chargement des données
         for crypto in crypto_liste:
