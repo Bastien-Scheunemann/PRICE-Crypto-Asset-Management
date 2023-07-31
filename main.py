@@ -131,7 +131,7 @@ class Asset:
         # Return the bounding numbers as a tuple
         return lower_bound, upper_bound
 
-    def tendance_haussiere(self, period):  # period est un nombre de jours
+    def tendance_haussiere(self, period):  # period is a number of day
         """
         :param period: number of day
         :return: 1 the price are increasing 0 the price are not increasing
@@ -148,7 +148,7 @@ class Asset:
         else:
             return 0
 
-    def tendance_baissiere(self, period):  # period est un nombre de jours
+    def tendance_baissiere(self, period):  # period is a number of day
         """
         :param period: number of day
         :return: 1 the price are decreasing 0 the price are not decreasing
@@ -193,7 +193,7 @@ class Asset:
             if crypto[1] == self.symbol:
                 data = crypto[2][self.index - 40: self.index]
 
-        # construction de l'indicateur
+        # building of the indicator
         ma_50 = data['Close'].rolling(window=15).mean()
         ma_200 = data['Close'].rolling(window=30).mean()
 
