@@ -475,7 +475,7 @@ class Portfolio:
 
     def performance(self):
 
-        header = ["Name", "Symbol", "Volatility", "Quantity", "Price", "% of Pf"]
+        headers = ["Name", "Symbol", "Volatility", "Quantity", "Price", "% of Pf"]
         data = []
         for asset in self.assets:
             data.append([asset.name, asset.symbol, asset.volatility(), asset.quantity, asset.price,
