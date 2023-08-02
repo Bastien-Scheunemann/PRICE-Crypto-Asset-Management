@@ -380,7 +380,7 @@ class Portfolio:
         # self.add_asset(asset1, order_time)
 
         ##Stop loss
-        elif current_price < 0.985* price_init:
+        elif current_price < 0.985 * price_init:
             # asset1 = Asset(asset.name, asset.symbol, asset.quantity / 2, asset.price, asset.datetime, self.index)
             self.remove_asset(asset, order_time)
         # self.add_asset(asset1, order_time)
