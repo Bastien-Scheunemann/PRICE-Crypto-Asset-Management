@@ -174,7 +174,7 @@ class Asset:
             if crypto[1] == self.symbol:
                 data = crypto[2][self.index - 40: self.index]
 
-        # construction de l'indicateur
+        # building up the indicator
         ma_50 = data['Close'].rolling(window=15).mean()
         ma_200 = data['Close'].rolling(window=30).mean()
 
