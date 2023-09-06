@@ -178,7 +178,7 @@ class Asset:
         ma_50 = data['Close'].rolling(window=15).mean()
         ma_200 = data['Close'].rolling(window=30).mean()
 
-        # ajout de la colonne 'Signal' dans le DataFrame
+        # add the column in the data set
         data.loc[:, 'Signal'] = np.where(ma_50 > ma_200, 1, 0)
 
         # le signal est positif s'il y a un croisement haussier
