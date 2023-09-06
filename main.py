@@ -181,7 +181,7 @@ class Asset:
         # add the column in the data set
         data.loc[:, 'Signal'] = np.where(ma_50 > ma_200, 1, 0)
 
-        # le signal est positif s'il y a un croisement haussier
+        # the signal is positif if there is an increasing crossing
         if data['Signal'].iloc[-1] > data['Signal'].iloc[-2]:
             return 1
         else:
