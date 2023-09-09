@@ -216,7 +216,7 @@ class Asset:
         me_15 = data['Close'].ewm(span=15).mean()
         me_25 = data['Close'].ewm(span=25).mean()
 
-        # ajout de la colonne 'Signal' dans le DataFrame
+        # add the Signal column to the panda dataframe
         data.loc[:, 'Signal'] = np.where(me_15 > me_25, 1, 0)
 
         # le signal est positif s'il y a un croisement haussier
