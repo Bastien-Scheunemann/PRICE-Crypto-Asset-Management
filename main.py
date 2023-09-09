@@ -212,7 +212,7 @@ class Asset:
             if crypto[1] == self.symbol:
                 data = crypto[2][self.index - 30: self.index]
 
-        # construction de l'indicateur
+        # building up the indicator
         me_15 = data['Close'].ewm(span=15).mean()
         me_25 = data['Close'].ewm(span=25).mean()
 
