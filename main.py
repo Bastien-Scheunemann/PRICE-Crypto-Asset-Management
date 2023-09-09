@@ -219,7 +219,7 @@ class Asset:
         # add the Signal column to the panda dataframe
         data.loc[:, 'Signal'] = np.where(me_15 > me_25, 1, 0)
 
-        # le signal est positif s'il y a un croisement haussier
+        # the signal is increasing
         if data['Signal'].iloc[-1] > data['Signal'].iloc[-2]:
             return 1
         else:
