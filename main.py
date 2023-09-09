@@ -206,7 +206,7 @@ class Asset:
         else:
             return 0
 
-    def check_ma_15_under_25(self):  # cet indicateur permet de déterminer une zone d'achat
+    def check_ma_15_under_25(self):  # this indicator check if the ma15 is under the ma 25
 
         for crypto in crypto_liste:
             if crypto[1] == self.symbol:
