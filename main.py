@@ -290,7 +290,7 @@ class Asset:
             return 0
 
 
-"""Définition de la class Portfolio et des fonctions associées"""
+"""Class Portfolio definition"""
 
 
 class Portfolio:
