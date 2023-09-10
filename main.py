@@ -295,8 +295,7 @@ class Asset:
 
 class Portfolio:
     """
-    Definition de la classe Portfolio qui a pour but de modelliser un
-    portefeuille ainsi que les fonctions associées
+    Definition of the portfolio class and the associated function
     """
 
     def __init__(self, name, cash_init, index=0, assets=None, history=[]):
