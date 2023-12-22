@@ -21,4 +21,3 @@ Always exercise caution and conduct thorough research before making any financia
 The backtesting results are purely hypothetical and should not be considered as indicative of actual future performance.
 Disclaimer
 
-This code is provided as-is and OpenAI or the model developer is not liable for any losses or damages arising from its use. Use this code responsibly and at your own risk. If you plan to use these strategies with real funds, it is highly recommended to consult with a qualified financial advisor or professional before doing so.
